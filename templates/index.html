@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Deblur Studio | Restormer Transformer Workspace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Pastel Palette */
+            --bg-canvas: #faf9fd;
+            --card-bg: rgba(255, 255, 255, 0.90);
+            --card-border: rgba(230, 228, 245, 0.9);
+            --card-shadow: 0 12px 36px rgba(180, 175, 215, 0.14), 0 2px 6px rgba(180, 175, 215, 0.08);
+
+            /* Pastel Colors */
+            --pastel-lavender: #ede9fe;
+            --pastel-lavender-dark: #7c3aed;
+            --pastel-pink: #fce7f3;
+            --pastel-pink-dark: #db2777;
+            --pastel-mint: #d1fae5;
+            --pastel-mint-dark: #059669;
+            --pastel-sky: #e0f2fe;
+            --pastel-sky-dark: #0284c7;
+
+            /* Gradients */
+            --pastel-gradient: linear-gradient(135deg, #c4b5fd 0%, #f9a8d4 50%, #fed7aa 100%);
+            --btn-gradient: linear-gradient(135deg, #a78bfa 0%, #f472b6 100%);
+            --btn-gradient-hover: linear-gradient(135deg, #9065f8 0%, #ec4899 100%);
+
+            /* Text */
+            --text-main: #272738;
+            --text-secondary: #65657b;
+            --text-muted: #9898af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-canvas);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 12% 15%, rgba(221, 214, 254, 0.5) 0%, transparent 45%),
+                radial-gradient(circle at 88% 80%, rgba(252, 231, 243, 0.55) 0%, transparent 50%),
+                radial-gradient(circle at 50% 40%, rgba(224, 242, 254, 0.35) 0%, transparent 55%);
+        }
+
+        header {
+            padding: 18px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(230, 228, 245, 0.8);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 4px 20px rgba(190, 185, 220, 0.06);
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--pastel-gradient);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 20px;
+            color: #ffffff;
+            box-shadow: 0 6px 18px rgba(196, 181, 253, 0.45);
+        }
+
+        .logo-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+        }
+
+        .logo-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            background: var(--pastel-mint);
+            color: var(--pastel-mint-dark);
+            border: 1px solid rgba(167, 243, 208, 0.8);
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 10px rgba(167, 243, 208, 0.3);
+        }
+
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        main {
+            flex: 1;
+            max-width: 1420px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 36px 32px;
+            display: grid;
+            grid-template-columns: 390px 1fr;
+            gap: 32px;
+        }
+
+        @media (max-width: 1060px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .control-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 26px;
+            padding: 30px;
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .section-title {
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .dropzone {
+            border: 2px dashed rgba(196, 181, 253, 0.7);
+            border-radius: 20px;
+            padding: 26px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: rgba(237, 233, 254, 0.35);
+            position: relative;
+        }
+
+        .dropzone:hover, .dropzone.dragover {
+            border-color: #a78bfa;
+            background: rgba(237, 233, 254, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(196, 181, 253, 0.35);
+        }
+
+        .dropzone-icon {
+            font-size: 34px;
+            margin-bottom: 8px;
+        }
+
+        .dropzone-text {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 3px;
+        }
+
+        .dropzone-subtext {
+            font-size: 0.74rem;
+            color: var(--text-muted);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .sample-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sample-btn {
+            background: rgba(245, 243, 255, 0.75);
+            border: 1px solid rgba(221, 214, 254, 0.6);
+            color: var(--text-secondary);
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sample-btn:hover {
+            background: #ffffff;
+            border-color: #c4b5fd;
+            color: var(--text-main);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(196, 181, 253, 0.25);
+        }
+
+        .sample-pill {
+            font-size: 0.68rem;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+        }
+
+        .pill-pink {
+            background: var(--pastel-pink);
+            color: var(--pastel-pink-dark);
+        }
+
+        .pill-lavender {
+            background: var(--pastel-lavender);
+            color: var(--pastel-lavender-dark);
+        }
+
+        .pill-sky {
+            background: var(--pastel-sky);
+            color: var(--pastel-sky-dark);
+        }
+
+        /* Transformer Spec Card */
+        .transformer-spec-card {
+            background: rgba(248, 250, 252, 0.95);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            border-radius: 18px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .trans-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .trans-title {
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .trans-badge {
+            background: var(--pastel-lavender);
+            color: var(--pastel-lavender-dark);
+            padding: 3px 9px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+        }
+
+        .trans-feature-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .trans-feature-item {
+            font-size: 0.76rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .trans-feature-item::before {
+            content: "✦";
+            color: #a78bfa;
+            font-size: 10px;
+        }
+
+        .btn-restore {
+            background: var(--btn-gradient);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 16px;
+            font-size: 0.98rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 8px 24px rgba(244, 114, 182, 0.35);
+            width: 100%;
+        }
+
+        .btn-restore:hover:not(:disabled) {
+            background: var(--btn-gradient-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(244, 114, 182, 0.45);
+        }
+
+        .btn-restore:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-download {
+            background: #ffffff;
+            border: 1px solid rgba(221, 214, 254, 0.8);
+            color: var(--pastel-lavender-dark);
+            border-radius: 14px;
+            padding: 13px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            box-shadow: 0 4px 14px rgba(180, 175, 215, 0.12);
+        }
+
+        .btn-download:hover {
+            background: var(--pastel-lavender);
+            border-color: #c4b5fd;
+            transform: translateY(-1px);
+        }
+
+        .viewer-container {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 26px;
+            backdrop-filter: blur(20px);
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            min-height: 580px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .viewer-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .view-mode-tabs {
+            display: flex;
+            background: rgba(243, 240, 255, 0.85);
+            border: 1px solid rgba(221, 214, 254, 0.6);
+            border-radius: 14px;
+            padding: 4px;
+            gap: 4px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: #ffffff;
+            color: var(--pastel-lavender-dark);
+            box-shadow: 0 3px 12px rgba(167, 139, 250, 0.25);
+        }
+
+        .metrics-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .metric-chip {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            border-radius: 10px;
+            padding: 7px 14px;
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+            box-shadow: 0 2px 8px rgba(180, 175, 215, 0.08);
+        }
+
+        .metric-chip strong {
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .display-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f0f8;
+            border-radius: 20px;
+            border: 1px solid rgba(225, 222, 242, 0.9);
+            overflow: hidden;
+            position: relative;
+            min-height: 460px;
+        }
+
+        .stage-wrapper {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+            max-height: 600px;
+            user-select: none;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .stage-img {
+            display: block;
+            max-width: 100%;
+            max-height: 600px;
+            object-fit: contain;
+        }
+
+        .clip-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 50%;
+            overflow: hidden;
+            z-index: 2;
+            border-right: 3px solid #ffffff;
+            box-shadow: 4px 0 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .clip-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            max-width: none;
+            object-fit: contain;
+        }
+
+        .slider-handle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 44px;
+            height: 44px;
+            background: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 6px 24px rgba(124, 58, 237, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: ew-resize;
+            z-index: 10;
+            border: 2px solid #ede9fe;
+            transition: transform 0.15s ease;
+        }
+
+        .slider-handle:hover {
+            transform: translate(-50%, -50%) scale(1.08);
+        }
+
+        .slider-handle::before {
+            content: "◀ ▶";
+            font-size: 10px;
+            color: #7c3aed;
+            font-weight: 800;
+        }
+
+        .tag-badge {
+            position: absolute;
+            bottom: 16px;
+            padding: 7px 14px;
+            border-radius: 10px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            backdrop-filter: blur(12px);
+            z-index: 5;
+            pointer-events: none;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+        }
+
+        .tag-blurry {
+            left: 16px;
+            background: rgba(255, 255, 255, 0.92);
+            color: #e11d48;
+            border: 1px solid rgba(254, 205, 211, 0.9);
+        }
+
+        .tag-restored {
+            right: 16px;
+            background: rgba(255, 255, 255, 0.92);
+            color: #059669;
+            border: 1px solid rgba(167, 243, 208, 0.9);
+        }
+
+        .side-by-side-view {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            padding: 18px;
+        }
+
+        .side-box {
+            background: #ffffff;
+            border: 1px solid rgba(230, 228, 245, 0.9);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 4px 18px rgba(180, 175, 215, 0.08);
+        }
+
+        .side-box-header {
+            padding: 12px 18px;
+            font-size: 0.76rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-blurry {
+            background: var(--pastel-pink);
+            color: var(--pastel-pink-dark);
+        }
+
+        .header-restored {
+            background: var(--pastel-mint);
+            color: var(--pastel-mint-dark);
+        }
+
+        .side-box-img-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 12px;
+            background: #fbfbfe;
+        }
+
+        .side-box img {
+            max-width: 100%;
+            max-height: 480px;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .heatmap-view {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            gap: 14px;
+        }
+
+        .heatmap-view img {
+            max-width: 100%;
+            max-height: 480px;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .heatmap-legend {
+            font-size: 0.76rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+            background: #ffffff;
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid rgba(221, 214, 254, 0.8);
+            box-shadow: 0 2px 10px rgba(180, 175, 215, 0.1);
+        }
+
+        .empty-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            font-size: 52px;
+            filter: drop-shadow(0 4px 12px rgba(196, 181, 253, 0.35));
+        }
+
+        .spinner {
+            width: 22px;
+            height: 22px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-group">
+            <div class="logo-icon">✦</div>
+            <div>
+                <div class="logo-title">Deep Deblur Studio</div>
+                <div class="logo-subtitle">Restormer Vision Transformer • 32.92 dB SOTA Benchmark</div>
+            </div>
+        </div>
+        <div class="status-badge">
+            <span class="badge-dot"></span>
+            <span>Restormer Active (RTX 3050 Ti GPU)</span>
+        </div>
+    </header>
+
+    <main>
+        <div class="control-panel">
+            <div>
+                <div class="section-title">1. Upload Input Photo</div>
+                <div class="dropzone" id="dropzone">
+                    <div class="dropzone-icon">🌸</div>
+                    <div class="dropzone-text" id="dropzone-label">Click or Drop Photo Here</div>
+                    <div class="dropzone-subtext">Supports PNG, JPG, JPEG (Any size)</div>
+                    <input type="file" id="file-input" accept="image/*">
+                </div>
+            </div>
+
+            <div>
+                <div class="section-title">Quick Test Presets</div>
+                <div class="sample-buttons">
+                    <button class="sample-btn" data-file="sample_heavy_blur_0.png">
+                        <span>High Motion Blur (0.png)</span>
+                        <span class="sample-pill pill-pink">High Blur</span>
+                    </button>
+                    <button class="sample-btn" data-file="sample_extreme_blur_19.png">
+                        <span>Extreme Blur (19.png)</span>
+                        <span class="sample-pill pill-lavender">Heavy</span>
+                    </button>
+                    <button class="sample-btn" data-file="sample_user_upload.png">
+                        <span>Street Perspective (10.png)</span>
+                        <span class="sample-pill pill-sky">Subtle</span>
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-title">2. Deep Learning Architecture</div>
+                <div class="transformer-spec-card">
+                    <div class="trans-title-row">
+                        <div class="trans-title">Restormer Vision Transformer</div>
+                        <div class="trans-badge">TRANSFORMER</div>
+                    </div>
+                    <ul class="trans-feature-list">
+                        <li class="trans-feature-item">Multi-Dconv Head Transposed Self-Attention (MDTA)</li>
+                        <li class="trans-feature-item">Gated-Dconv Feed-Forward Networks (GDFN)</li>
+                        <li class="trans-feature-item">U-Shaped Multi-Scale Encoder-Decoder backbone</li>
+                        <li class="trans-feature-item">Global Residual Learning for edge restoration</li>
+                        <li class="trans-feature-item">26.1M Parameters | 32.92 dB GoPro SOTA Weights</li>
+                    </ul>
+                </div>
+            </div>
+
+            <button class="btn-restore" id="btn-restore" disabled>
+                <span id="btn-text">Auto-Complete & Deblur</span>
+                <div class="spinner" id="btn-spinner" style="display: none;"></div>
+            </button>
+
+            <button class="btn-download" id="btn-download" style="display: none;">
+                <span>⬇ Download Restored Image</span>
+            </button>
+        </div>
+
+        <div class="viewer-container">
+            <div class="viewer-top-bar">
+                <div class="view-mode-tabs" id="view-mode-tabs" style="display: none;">
+                    <button class="tab-btn active" id="tab-slider">Split Slider</button>
+                    <button class="tab-btn" id="tab-side">Side-by-Side</button>
+                    <button class="tab-btn" id="tab-heatmap">CNN/Transformer Heatmap</button>
+                </div>
+
+                <div class="metrics-bar" id="metrics-bar" style="display: none;">
+                    <div class="metric-chip">Model: <strong>RESTORMER</strong></div>
+                    <div class="metric-chip">Device: <strong id="m-device">CUDA</strong></div>
+                    <div class="metric-chip">Latency: <strong id="m-latency">-- ms</strong></div>
+                    <div class="metric-chip">Resolution: <strong id="m-res">--</strong></div>
+                </div>
+            </div>
+
+            <div class="display-area" id="display-area">
+                <div class="empty-placeholder" id="empty-placeholder">
+                    <div class="empty-icon">🎨</div>
+                    <div style="font-weight: 800; font-size: 1.18rem; color: var(--text-main);">No Picture Selected</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted); max-width: 320px;">
+                        Drop any blurry photo or choose a quick preset on the left to start restoration.
+                    </div>
+                </div>
+
+                <div class="stage-wrapper" id="stage-wrapper" style="display: none;">
+                    <img id="img-restored-base" class="stage-img" src="" alt="Restored Image">
+
+                    <div class="clip-layer" id="clip-layer">
+                        <img id="img-blurry-clip" class="clip-img" src="" alt="Original Blurry">
+                    </div>
+
+                    <div class="slider-handle" id="slider-handle"></div>
+
+                    <div class="tag-badge tag-blurry">ORIGINAL (BLURRY)</div>
+                    <div class="tag-badge tag-restored">RESTORED (TRANSFORMER)</div>
+                </div>
+
+                <div class="side-by-side-view" id="side-by-side-view" style="display: none;">
+                    <div class="side-box">
+                        <div class="side-box-header header-blurry">
+                            <span>ORIGINAL (BLURRY)</span>
+                            <span>INPUT</span>
+                        </div>
+                        <div class="side-box-img-wrap">
+                            <img id="side-img-blurry" src="" alt="Blurry">
+                        </div>
+                    </div>
+
+                    <div class="side-box">
+                        <div class="side-box-header header-restored">
+                            <span>RESTORED / AUTO-COMPLETED</span>
+                            <span>TRANSFORMER OUTPUT</span>
+                        </div>
+                        <div class="side-box-img-wrap">
+                            <img id="side-img-restored" src="" alt="Restored">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="heatmap-view" id="heatmap-view" style="display: none;">
+                    <img id="heatmap-img" src="" alt="Residual Correction">
+                    <div class="heatmap-legend">
+                        <span>Color Key: Red/Yellow = High Motion Blur Corrected | Dark Blue = Unaltered Background</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let selectedFile = null;
+        let currentMode = 'slider';
+        let restoredDataUrl = null;
+
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('file-input');
+        const dropzoneLabel = document.getElementById('dropzone-label');
+        const btnRestore = document.getElementById('btn-restore');
+        const btnText = document.getElementById('btn-text');
+        const btnSpinner = document.getElementById('btn-spinner');
+        const btnDownload = document.getElementById('btn-download');
+
+        const emptyPlaceholder = document.getElementById('empty-placeholder');
+        const stageWrapper = document.getElementById('stage-wrapper');
+        const clipLayer = document.getElementById('clip-layer');
+        const sliderHandle = document.getElementById('slider-handle');
+        const imgRestoredBase = document.getElementById('img-restored-base');
+        const imgBlurryClip = document.getElementById('img-blurry-clip');
+
+        const sideBySideView = document.getElementById('side-by-side-view');
+        const sideImgBlurry = document.getElementById('side-img-blurry');
+        const sideImgRestored = document.getElementById('side-img-restored');
+
+        const heatmapView = document.getElementById('heatmap-view');
+        const heatmapImg = document.getElementById('heatmap-img');
+
+        const metricsBar = document.getElementById('metrics-bar');
+        const viewModeTabs = document.getElementById('view-mode-tabs');
+        const tabSlider = document.getElementById('tab-slider');
+        const tabSide = document.getElementById('tab-side');
+        const tabHeatmap = document.getElementById('tab-heatmap');
+        const sampleBtns = document.querySelectorAll('.sample-btn');
+
+        dropzone.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                handleFileSelect(e.dataTransfer.files[0]);
+            }
+        });
+
+        sampleBtns.forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const filename = btn.getAttribute('data-file');
+                try {
+                    const resp = await fetch('/api/sample/' + filename);
+                    const blob = await resp.blob();
+                    const file = new File([blob], filename, { type: 'image/png' });
+                    handleFileSelect(file);
+                } catch (err) {
+                    alert('Error loading sample: ' + err.message);
+                }
+            });
+        });
+
+        function handleFileSelect(file) {
+            selectedFile = file;
+            dropzoneLabel.textContent = file.name;
+            btnRestore.removeAttribute('disabled');
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                emptyPlaceholder.style.display = 'none';
+                viewModeTabs.style.display = 'flex';
+
+                imgRestoredBase.src = e.target.result;
+                imgBlurryClip.src = e.target.result;
+                sideImgBlurry.src = e.target.result;
+                sideImgRestored.src = e.target.result;
+
+                updateDisplayMode();
+                setTimeout(syncDimensions, 100);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        tabSlider.addEventListener('click', () => {
+            currentMode = 'slider';
+            setActiveTab(tabSlider);
+            updateDisplayMode();
+        });
+
+        tabSide.addEventListener('click', () => {
+            currentMode = 'side';
+            setActiveTab(tabSide);
+            updateDisplayMode();
+        });
+
+        tabHeatmap.addEventListener('click', () => {
+            currentMode = 'heatmap';
+            setActiveTab(tabHeatmap);
+            updateDisplayMode();
+        });
+
+        function setActiveTab(activeBtn) {
+            [tabSlider, tabSide, tabHeatmap].forEach(b => b.classList.remove('active'));
+            activeBtn.classList.add('active');
+        }
+
+        function updateDisplayMode() {
+            stageWrapper.style.display = currentMode === 'slider' ? 'inline-block' : 'none';
+            sideBySideView.style.display = currentMode === 'side' ? 'grid' : 'none';
+            heatmapView.style.display = currentMode === 'heatmap' ? 'flex' : 'none';
+            if (currentMode === 'slider') {
+                syncDimensions();
+            }
+        }
+
+        btnRestore.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            btnRestore.setAttribute('disabled', 'true');
+            btnText.textContent = 'Processing with Restormer Transformer...';
+            btnSpinner.style.display = 'block';
+
+            const formData = new FormData();
+            formData.append('image', selectedFile);
+
+            try {
+                const response = await fetch('/api/restore', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    restoredDataUrl = data.restored;
+
+                    imgBlurryClip.src = data.original;
+                    imgRestoredBase.src = data.restored;
+
+                    sideImgBlurry.src = data.original;
+                    sideImgRestored.src = data.restored;
+
+                    heatmapImg.src = data.heatmap;
+
+                    document.getElementById('m-device').textContent = data.device;
+                    document.getElementById('m-latency').textContent = data.latency;
+                    document.getElementById('m-res').textContent = data.resolution;
+                    metricsBar.style.display = 'flex';
+                    btnDownload.style.display = 'flex';
+
+                    setTimeout(syncDimensions, 100);
+                }
+            } catch (err) {
+                alert('Request failed: ' + err.message);
+            } finally {
+                btnRestore.removeAttribute('disabled');
+                btnText.textContent = 'Auto-Complete & Deblur';
+                btnSpinner.style.display = 'none';
+            }
+        });
+
+        btnDownload.addEventListener('click', () => {
+            if (!restoredDataUrl) return;
+            const a = document.createElement('a');
+            a.href = restoredDataUrl;
+            a.download = 'restormer_sharp_' + (selectedFile ? selectedFile.name : 'output.jpg');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+
+        function syncDimensions() {
+            const w = imgRestoredBase.clientWidth;
+            const h = imgRestoredBase.clientHeight;
+            if (w > 0 && h > 0) {
+                imgBlurryClip.style.width = w + 'px';
+                imgBlurryClip.style.height = h + 'px';
+            }
+        }
+
+        window.addEventListener('resize', syncDimensions);
+        imgRestoredBase.addEventListener('load', syncDimensions);
+
+        let isDragging = false;
+
+        function updateSlider(clientX) {
+            const rect = stageWrapper.getBoundingClientRect();
+            let x = clientX - rect.left;
+            x = Math.max(0, Math.min(x, rect.width));
+            const pct = (x / rect.width) * 100;
+
+            clipLayer.style.width = pct + '%';
+            sliderHandle.style.left = pct + '%';
+        }
+
+        stageWrapper.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            updateSlider(e.clientX);
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            updateSlider(e.clientX);
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        stageWrapper.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                updateSlider(e.touches[0].clientX);
+            }
+        });
+    </script>
+</body>
+</html>
